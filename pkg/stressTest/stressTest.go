@@ -1,47 +1,43 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
 package stresstest
 
 import (
 	"fmt"
-
-	"github.com/spf13/cobra"
+	"net/http"
+	"sync"
+	"time"
 )
 
-var (
-	testUrl         string
-	testRequests    int
-	testConcurrency int
-)
+func RunStressTest(url string, totalRequests int, concurrency int) {
+	var wg sync.WaitGroup
+	requestChan := make(chan int, totalRequests)
+	resultChan := make(chan *http.Response, totalRequests)
 
-// stressTestCmd represents the stressTest command
-var startCmd = &cobra.Command{
-	Use:   "start --url exemple.com  --requests 100 --concurrency 10",
-	Short: "Start stress test",
-	Long:  `Starts the stress test based on the parameters passed, which are the application URL (--url), how many requests will be made (--requests), and how many simultaneous threads (--concurrency)`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("stressTest called")
-	},
-}
+	startTime := time.Now()
 
-func init() {
-	rootCmd.AddCommand(startCmd)
+	for i := 0; i < concurrency; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for range requestChan {
+				resp, err := http.Get(url)
+				if err != nil {
+					fmt.Println("Falid request:", err)
+				} else {
+					resultChan <- resp
+				}
+			}
+		}()
+	}
 
-	// Here you will define your flags and configuration settings.
+	for i := 0; i < totalRequests; i++ {
+		requestChan <- i
+	}
+	close(requestChan)
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// stressTestCmd.PersistentFlags().String("foo", "", "A help for foo")
+	wg.Wait()
+	close(resultChan)
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// stressTestCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	totalTime := time.Since(startTime)
 
-	startCmd.Flags().StringVar(&testUrl, "url", "", "Url of the application")
-	startCmd.Flags().IntVar(&testRequests, "requests", 10, "Number of requets")
-	startCmd.Flags().IntVar(&testConcurrency, "concurrency", 1, "Number of simultaneous threads")
-
-	startCmd.MarkFlagRequired("url")
-
+	GenerateReport(resultChan, totalRequests, totalTime)
 }
