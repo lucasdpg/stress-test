@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 
-	"github.com/lucasdpg/stress-test/pkg/stresstest"
+	stresstest "github.com/lucasdpg/stress-test/pkg/stressTest"
 	"github.com/spf13/cobra"
 )
 
