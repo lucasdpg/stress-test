@@ -1,7 +1,9 @@
 package main
 
-import stresstest "github.com/lucasdpg/stress-test/pkg/stressTest"
+import (
+	"github.com/lucasdpg/stress-test/pkg/cli"
+)
 
 func main() {
-	stresstest.Execute()
+	cli.Execute()
 }
