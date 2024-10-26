@@ -45,7 +45,7 @@ func RunStressTest(url string, totalRequests int, concurrency int) {
 	totalTime := time.Since(startTime)
 
 	fmt.Printf("\nStress Test Completed\n")
-	fmt.Printf("Total requests: %d\n", totalRequests*concurrency) // Total correto de requisições
+	fmt.Printf("Total requests: %d\n", totalRequests*concurrency)
 	fmt.Printf("Total time: %v\n", totalTime)
 	fmt.Printf("Total successes: %d\n", successes)
 	fmt.Printf("Total failures: %d\n", failures)
