@@ -60,7 +60,7 @@ git clone git@github.com:lucasdpg/stress-test.git
 cd stress-test
 ```
 
-- Build e deploy local do projeto
+- Build
 ```
 docker build -t stress-test .
 ```
