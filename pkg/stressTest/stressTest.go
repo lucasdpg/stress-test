@@ -2,6 +2,7 @@ package stresstest
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -14,11 +15,16 @@ func RunStressTest(url string, totalRequests int, concurrency int) {
 	statusDistribution := make(map[int]int)
 	startTime := time.Now()
 
-	sendRequests := func() {
+	requestsPerGoroutine := totalRequests / concurrency
+	extraRequests := totalRequests % concurrency
+
+	sendRequests := func(numRequests int) {
 		defer wg.Done()
-		for i := 0; i < totalRequests; i++ {
+		for i := 0; i < numRequests; i++ {
+			log.Println("Starting request to", url)
 			resp, err := http.Get(url)
 			mu.Lock()
+			log.Println("Request completed with status:", resp.StatusCode)
 
 			if err != nil {
 				failures++
@@ -37,15 +43,19 @@ func RunStressTest(url string, totalRequests int, concurrency int) {
 	}
 
 	for i := 0; i < concurrency; i++ {
+		numRequests := requestsPerGoroutine
+		if i < extraRequests {
+			numRequests++
+		}
 		wg.Add(1)
-		go sendRequests()
+		go sendRequests(numRequests)
 	}
 
 	wg.Wait()
 	totalTime := time.Since(startTime)
 
 	fmt.Printf("\nStress Test Completed\n")
-	fmt.Printf("Total requests: %d\n", totalRequests*concurrency)
+	fmt.Printf("Total requests: %d\n", totalRequests)
 	fmt.Printf("Total time: %v\n", totalTime)
 	fmt.Printf("Total successes: %d\n", successes)
 	fmt.Printf("Total failures: %d\n", failures)
