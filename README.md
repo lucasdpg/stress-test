@@ -45,3 +45,39 @@ Poderemos utilizar essa aplicação fazendo uma chamada via docker. Ex:
 ```
 docker run <sua imagem docker> —url=http://google.com —requests=1000 —concurrency=10
 ```
+
+# Stress Test - Como Rodar projeto?
+
+Para rodar o projeto.
+
+- Clone do projeto:
+```
+git clone git@github.com:lucasdpg/stress-test.git
+```
+
+- Acessar o diretório do projeto
+```
+cd stress-test
+```
+
+- Build e deploy local do projeto
+```
+docker build -t stress-test .
+```
+
+- Exemplos de como rodar o teste:
+
+Docker local
+```
+docker run stress-test --url=http://host.docker.internal:8080 --requests=1000 --concurrency=10
+```
+
+App local
+```
+docker run stress-test --url=localhost:8080 --requests=1000 --concurrency=10
+```
+
+App externa
+```
+docker run stress-test --url=https://www.google.com.br --requests=1000 --concurrency=10
+```
