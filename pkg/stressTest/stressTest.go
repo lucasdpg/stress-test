@@ -10,7 +10,7 @@ import (
 
 func RunStressTest(url string, totalRequests int, concurrency int) {
 	var wg sync.WaitGroup
-	var successes, failures int
+	var successes, failures, redirectCount int
 	var mu sync.Mutex
 	statusDistribution := make(map[int]int)
 	startTime := time.Now()
@@ -27,11 +27,17 @@ func RunStressTest(url string, totalRequests int, concurrency int) {
 			log.Println("Request completed with status:", resp.StatusCode)
 
 			if err != nil {
-				failures++
+				if resp.StatusCode == 302 || resp.StatusCode == 301 {
+					redirectCount++
+				} else {
+					failures++
+				}
 			} else {
 				statusDistribution[resp.StatusCode]++
 				if resp.StatusCode == 200 {
 					successes++
+				} else if resp.StatusCode == 302 || resp.StatusCode == 301 {
+					redirectCount++
 				} else {
 					failures++
 				}
@@ -59,6 +65,7 @@ func RunStressTest(url string, totalRequests int, concurrency int) {
 	fmt.Printf("Total time: %v\n", totalTime)
 	fmt.Printf("Total successes: %d\n", successes)
 	fmt.Printf("Total failures: %d\n", failures)
+	fmt.Printf("Total redirects: %d\n", redirectCount)
 	fmt.Printf("HTTP status code distribution:\n")
 	for code, count := range statusDistribution {
 		fmt.Printf("  %d: %d\n", code, count)
